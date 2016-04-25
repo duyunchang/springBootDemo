@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+			http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+			http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
+			http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-2.5.xsd
+			http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+ <!-- 注：此配置文件中,主要为一些系统共用及底层配置,起到全局性的作用的 -->
+  
+     <!-- 配置文件读取 -->
+	<bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">			
+			<list>
+			   <value>META-INF/config/jdbc.properties</value>
+			   <value>META-INF/config/config.properties</value>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- 定义mysql数据源 -->
+	 <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="${jdbc.driverClassName}" />
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+		<property name="maxActive" value="${jdbc.maxActive}"/>
+		<property name="maxWait" value="${jdbc.maxWait}"/>
+		<property name="maxIdle" value="${jdbc.maxIdle}"/>
+		<property name="initialSize" value="1"/>		
+		<property name="defaultAutoCommit" value="true" />
+	</bean>	
+	
+	
+	<!-- sessionFactory 定义  -->
+
+	 <bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">		 
+		<property name="dataSource">  
+             <ref bean="dataSource"/>  
+        </property>
+        <property name="hibernateProperties">
+		   <props>
+			    <prop key="hibernate.dialect" >${hibernate.dialect.mysql}</prop>
+			    <prop key="hibernate.show_sql">${hibernate.show_sql}</prop> 
+			    <prop key="hibernate.max_fetch_depth">${hibernate.max_fetch_depth}</prop> 
+			    <prop key="hibernate.jdbc.fetch_size">${hibernate.jdbc.fetch_size}</prop> 
+			    <prop key="hibernate.jdbc.batch_size">${hibernate.jdbc.batch_size}</prop>   
+			    <prop key="hibernate.jdbc.use_scrollable_resultset">${hibernate.jdbc.use_scrollable_resultset}</prop> 
+			    <prop key="hibernate.cache.use_second_level_cache">${hibernate.cache.use_second_level_cache}</prop> 
+		   </props>
+        </property>
+        <!-- 如要采用注解方式建立映射,所有对象须放在此包下-->
+        <property name="packagesToScan" value="org/com/examples/springmvc/entity/"></property>
+	</bean>	
+		
+		
+		
+	
+	<!-- 开启事务注解机制 -->
+	 <bean id="transactionManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager" >  
+        <property name="sessionFactory" ref="sessionFactory" />  
+    </bean>
+    <tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true" /> 
+       
+    <bean id="hibernateTemplate" class="org.springframework.orm.hibernate3.HibernateTemplate">
+    	<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+	
+	
+
+</beans>
+
+
